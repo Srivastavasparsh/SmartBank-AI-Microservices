@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank AI</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .logo { font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; display: block; }
+        .balance-box { background: #e0f7fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .balance-title { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-amount { font-size: 32px; font-weight: bold; color: #006064; }
+        button { background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; width: 100%; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; text-align: left; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .loading { color: #666; font-style: italic; margin-top: 10px; display: none;}
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <span class="logo">🔒 SecureBank AI</span>
+
+    <div class="balance-box">
+        <div class="balance-title">Current Balance</div>
+        <div class="balance-amount">$5,000.00</div>
+    </div>
+
+    <button onclick="askAI()">✨ Ask AI Advisor</button>
+    <div id="loading" class="loading">Analyzing your finances...</div>
+
+    <div id="result" class="success">
+        <strong>Analysis:</strong> <span id="text-analysis"></span><br><br>
+        <strong>Tip:</strong> <span id="text-advice"></span>
+    </div>
+</div>
+
+<script>
+    async function askAI() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('result').style.display = 'none';
+
+        try {
+            const response = await fetch('/check-ai');
+
+            // NEW: Parse as JSON, not Text
+            const data = await response.json();
+
+            document.getElementById('text-analysis').innerText = data.analysis;
+
+            // Now the recommendation will actually show up!
+            document.getElementById('text-advice').innerText = data.recommendation;
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+        } catch (error) {
+            alert("Error connecting to server!");
+        }
+    }
+</script>
+</body>
+</html>
