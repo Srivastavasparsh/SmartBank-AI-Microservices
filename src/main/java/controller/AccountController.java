@@ -1,52 +1,35 @@
-package controller;
-
-import com.securebank.app.entity.Account;
-import com.securebank.app.service.AccountService;
-import com.securebank.app.repository.AccountRepository; // Import Repository
+package com.securebank.app.controller;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate; // Import RestTemplate
-import java.util.Map; // Import Map
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.securebank.app.repository.AccountRepository;
 
 @RestController
-@RequestMapping("/api/accounts")
 public class AccountController {
-    @Autowired
-    private AccountService accountService;
 
-    // We inject the Repository to find users by ID
     @Autowired
     private AccountRepository accountRepository;
 
-    // We inject RestTemplate to talk to Python
+    // Injecting the RabbitMQ template to send messages to the cloud
     @Autowired
-    private RestTemplate restTemplate;
+    private RabbitTemplate rabbitTemplate;
 
-    @PostMapping
-    public Account createAccount(@RequestBody Account account) {
-        return accountService.createAccount(account.getUsername(),
-                account.getPassword(),
-                account.getBalance());
-    }
-
-    // NEW AI ENDPOINT
-    // NEW SAFE VERSION (Debug Mode)
     @GetMapping("/{id}/analyze")
     public String analyzeAccount(@PathVariable Long id) {
         try {
-            // 1. Find account
-            Account account = accountRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Account not found in Database"));
+            // Create a mock transaction payload to bypass the empty database
+            String mockTransaction = "{\"accountId\": " + id + ", \"amount\": 1500.00, \"location\": \"Kanpur\"}";
 
-            // 2. call Python
-            String pythonUrl = "http://127.0.0.1:5000/analyze";
-            Map<String, Object> response = restTemplate.postForObject(pythonUrl, account, Map.class);
+            // Publish the mock data directly to the RabbitMQ queue
+            rabbitTemplate.convertAndSend("fraud_queue", mockTransaction);
 
-            // 3. Return result
-            return "AI Analysis: " + response.get("analysis");
+            // Return immediate success
+            return "✅ SUCCESS! Mock transaction for Account " + id + " has been published to RabbitMQ!";
 
         } catch (Exception e) {
-            // This will print the REAL error in Postman
             return "FAILED: " + e.getMessage();
         }
     }
