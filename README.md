@@ -1,29 +1,38 @@
-# SmartBank AI System 🏦 🤖
+# 🚀 SmartBank AI — Event-Driven Anomaly Detection Microservices
 
-A hybrid banking application that integrates a **Java Spring Boot** backend with a **Python AI Microservice**.
+A production-grade, event-driven banking backend that integrates a **Java Spring Boot** transaction core with an asynchronous **Python AI Worker** for real-time fraud and anomaly detection via **CloudAMQP (RabbitMQ)**.
 
-The system handles secure banking transactions in Java while offloading complex credit score analysis to a Python-based AI service, communicating via RESTful APIs.
+---
 
-## 🚀 Key Features
-* **Hybrid Architecture:** Seamless integration between Java (Business Logic) and Python (Data Logic).
-* **Microservices Communication:** Uses HTTP REST requests to bridge the two languages.
-* **Credit Scoring Engine:** Python service calculates creditworthiness based on account balance and history.
-* **Secure Transactions:** Java backend manages user accounts and balance updates.
+## 🌐 Live System Endpoints
 
-## 🛠️ Tech Stack
-* **Backend Core:** Java, Spring Boot
-* **AI Service:** Python, Flask
-* **Communication:** REST API (JSON)
-* **Tools:** Maven, Git, IntelliJ IDEA
+* **Java Core API:** [https://smartbank-ai-microservices.onrender.com](https://smartbank-ai-microservices.onrender.com)
+* **Live Event Trigger:** [https://smartbank-ai-microservices.onrender.com/1/analyze](https://smartbank-ai-microservices.onrender.com/1/analyze)
+* **Python AI Worker:** Hosted asynchronously on Render (CloudAMQP Listener)
 
-## ⚙️ How It Works
-1.  **User Request:** The frontend (or Postman) sends a request to the Java Backend.
-2.  **Processing:** Java handles the standard banking logic.
-3.  **AI Analysis:** Java sends a specific payload to the Python Flask service.
-4.  **Response:** Python processes the logic and returns a JSON response to Java.
+---
 
-## 📦 How to Run
-**1. Start the AI Service (Python):**
-```bash
-cd ai-service
-python app.py
+## 🏗️ System Architecture
+
+```text
+[ Client / Browser ]
+        │
+        ▼ (HTTP GET / POST)
+┌───────────────────────────────────────┐
+│     Java Spring Boot Microservice     │
+│  - Manages Account & Transaction Logic│
+│  - Converts payload & publishes event │
+└──────────────────┬────────────────────┘
+                   │ (AMQP / Port 5671)
+                   ▼
+┌───────────────────────────────────────┐
+│       CloudAMQP (RabbitMQ Broker)     │
+│  - Queue: `fraud_queue`               │
+└──────────────────┬────────────────────┘
+                   │ (Asynchronous Event Consume)
+                   ▼
+┌───────────────────────────────────────┐
+│       Python AI Worker Service        │
+│  - Scikit-learn (Isolation Forest)    │
+│  - Evaluates Fraud Risk & Anomaly Score│
+└───────────────────────────────────────┘
